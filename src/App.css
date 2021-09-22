@@ -1,38 +1,110 @@
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Raleway', sans-serif;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+
+  background-color: #100E1D;
+  color: #E7E7EB;
+}
+
 .App {
-  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  min-height: 100%;
+  width: 100%;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.weather-today {
+  background-color: #1E213A;
+  padding: 1rem;
+  flex: 2;
+  padding: 1rem 2rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.flex-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  justify-content: space-around;
+  width: 100%;
+  min-height: 100vh;
 }
 
-.App-link {
-  color: #61dafb;
+
+.weather-today input[type="text"].city-input{
+  padding: 0.5rem 0.75rem;
+  border-radius: 1rem;
+  outline: none;
+  border: none;
+  display: block;
+  margin: 1rem auto;
+  font-size: 1rem;
+  margin: 1rem auto;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.weather-today button[type="submit"].city-search{
+  padding: 0.5rem 0.75rem;
+  border-radius: 1rem;
+  outline: none;
+  border: none;
+  display: block;
+  font-size: 1rem;
+  margin: 0 auto 2rem auto;
+}
+
+ img {
+  display: block;
+  margin: 1.5rem auto;
+  max-width: 150px;
+}
+
+.weather-future {
+  flex: 5;
+}
+
+@media screen and (max-width: 800px) {
+  .App {
+    flex-direction: column;
   }
-  to {
-    transform: rotate(360deg);
+
+  .weather-today, .weather-future {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .weather-today input[type="text"].city-input,
+  .weather-today button[type="submit"].city-search{
+    display: inline-block;
+    margin-right: 0.5rem;
+    margin-left: 0.5rem;
+  }
+}
+
+
+
+@media screen and (max-width: 500px) {
+  
+  .weather-today input[type="text"].city-input,
+  .weather-today button[type="submit"].city-search{
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
   }
 }
