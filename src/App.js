@@ -1,5 +1,5 @@
 import './App.css';
-import {useState} from 'react'
+import {useState, useRef} from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faCloud, faCloudRain, faCloudSun, faSun, faWind} from '@fortawesome/free-solid-svg-icons';
 import lightShower from'./assets/Shower.png';
@@ -19,17 +19,56 @@ for(let i = 0; i<5; i++) {
   nextDate.setDate(nextDate.getDate()+i+1);
   
   nextFiveDays[i] = `${days[nextDate.getDay()]}, ${nextDate.getDate()} ${months[nextDate.getMonth()]}`;
-  console.log(nextFiveDays[i]);
+  // console.log(nextFiveDays[i]);
 }
 
 function App() {
 
-  
+  const [weatherData, setWeatherData] = useState([]);
   const [city, setCity] = useState("Chennai");
   const [unit, setUnit] = useState("°C");
+  const [woeid, setWOEID] = useState("");
+
+  const responseMessage = useRef("");
+
+  async function fetchWOEID() {
+    try {
+      let response = await fetch(`https://cors-anywhere.herokuapp.com/https://www.metaweather.com/api/location/search/?query=${city}`);
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      let responseObject = await response.json();
+      if(responseObject.length === 0 || responseObject === null) {
+        throw new Error('Please enter a City');
+        responseMessage.current.class = "message error";
+      }
+      const responseCity = responseObject[0].title;
+
+      if(city!==responseCity) {
+        console.log(city, responseCity)
+
+        responseMessage.current.textContent = `Did you mean ${responseCity}?`;
+        responseMessage.current.class = "message suggestion block";
+        setCity(responseCity);
+      }
+      else {
+        responseMessage.current.class = "none";
+      }
+      setWOEID(responseObject[0].weoid);
+      console.log(responseObject[0].woeid);
+  
+    } catch(e) {
+      console.log(e);
+      responseMessage.current.className = "message error block";
+      responseMessage.current.textContent = e;
+    }
+  }
+  
+
 
   const today = `${days[new Date().getDay()]}, ${new Date().getDate()} ${months[new Date().getMonth()]}`;
-  console.log(today); 
+  // console.log(today); 
 
   function changeCity(e){
     setCity(e.target.value);
@@ -37,6 +76,7 @@ function App() {
 
   function searchCity(e) {
     e.preventDefault();
+    fetchWOEID();
   }
 
   return (
@@ -48,6 +88,7 @@ function App() {
               <input className="city-input" placeholder="Search City" onChange={changeCity}/>
               <input type="submit" className="btn-search-city"></input>
             </form>
+            <p class="response-message" ref={responseMessage}></p>
           </article>
           <article className="weather-icon">
             <FontAwesomeIcon icon={faCloudRain} size="5x"></FontAwesomeIcon>

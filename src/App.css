@@ -69,6 +69,28 @@ body {
 }
 
 .weather-today .city-form {
+  margin-bottom: 0.5rem;
+}
+
+
+.message.none {
+  display: none;
+}
+
+.message.block {
+  display: block;
+}
+
+.message.error {
+  color: red;
+}
+
+.message.suggestion {
+  color: rgb(255, 208, 0);
+}
+
+
+.weather-today .weather-city {
   margin: 1rem auto 2rem auto;
 }
 
