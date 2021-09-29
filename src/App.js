@@ -1,5 +1,6 @@
 import './App.css';
-import {useState, useRef} from 'react'
+import {useState, useRef, useEffect} from 'react'
+import {axios} from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faCloud, faCloudRain, faCloudSun, faSun, faWind} from '@fortawesome/free-solid-svg-icons';
 import lightShower from'./assets/Shower.png';
@@ -19,64 +20,82 @@ for(let i = 0; i<5; i++) {
   nextDate.setDate(nextDate.getDate()+i+1);
   
   nextFiveDays[i] = `${days[nextDate.getDay()]}, ${nextDate.getDate()} ${months[nextDate.getMonth()]}`;
-  // console.log(nextFiveDays[i]);
 }
+
+
 
 function App() {
 
   const [weatherData, setWeatherData] = useState([]);
   const [city, setCity] = useState("Chennai");
   const [unit, setUnit] = useState("°C");
-  const [woeid, setWOEID] = useState("");
+  const [woeid, setWOEID] = useState("2295424");
+  const [icon, setIcon] = useState("");
 
   const responseMessage = useRef("");
 
-  async function fetchWOEID() {
-    try {
-      let response = await fetch(`https://cors-anywhere.herokuapp.com/https://www.metaweather.com/api/location/search/?query=${city}`);
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      let responseObject = await response.json();
-      if(responseObject.length === 0 || responseObject === null) {
-        throw new Error('Please enter a City');
-        responseMessage.current.class = "message error";
-      }
-      const responseCity = responseObject[0].title;
+  useEffect(() => {
+    fetchWeatherData();
+  }, [woeid]);
 
-      if(city!==responseCity) {
-        console.log(city, responseCity)
+  const fetchWOEID = async () => {
+    const response = await fetch(`https://cors-anywhere-venky.herokuapp.com/https://www.metaweather.com/api/location/search/?query=${city}`);
 
-        responseMessage.current.textContent = `Did you mean ${responseCity}?`;
-        responseMessage.current.class = "message suggestion block";
-        setCity(responseCity);
-      }
-      else {
-        responseMessage.current.class = "none";
-      }
-      setWOEID(responseObject[0].weoid);
-      console.log(responseObject[0].woeid);
-  
-    } catch(e) {
-      console.log(e);
-      responseMessage.current.className = "message error block";
-      responseMessage.current.textContent = e;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  }
+   
+    let data = await response.json();
+    if(data.length === 0 || data === null) {
+      responseMessage.current.className = "message error";
+      throw new Error('Please enter a City');
+    }
+    const responseCity = data[0].title;
+    if(city!==responseCity) {
+      responseMessage.current.textContent = `Did you mean ${responseCity}?`;
+      responseMessage.current.className = "message suggestion block";
+      setCity(responseCity);
+    }
+    else {
+      responseMessage.current.className = 'message none';
+    }
+    return data;
+  };
+
+  const fetchWeatherData = async () => {
+    const weatherResponse = await fetch(`https://cors-anywhere-venky.herokuapp.com/https://www.metaweather.com/api/location/${woeid}/`)
+    
+    const data = await weatherResponse.json();
+    // console.log(weatherResponse)
+    console.log(data["consolidated_weather"][0]["weather_state_abbr"]); 
+    setWeatherData(data["consolidated_weather"][0])
+
+    setIcon(`https://www.metaweather.com//static/img/weather/${data["consolidated_weather"][0]["weather_state_abbr"]}.svg`);
+    console.log(icon);
+  };
+
+  
   
 
 
   const today = `${days[new Date().getDay()]}, ${new Date().getDate()} ${months[new Date().getMonth()]}`;
-  // console.log(today); 
 
   function changeCity(e){
+    responseMessage.current.className = "message none";
     setCity(e.target.value);
   }
 
   function searchCity(e) {
     e.preventDefault();
-    fetchWOEID();
+    fetchWOEID()
+      .then(data => {
+        setWOEID(data[0].woeid);
+      })
+      .catch(err => {
+        console.log(err);
+        responseMessage.current.className = "message error block";
+        responseMessage.current.textContent = err;
+      });
   }
 
   return (
@@ -88,17 +107,23 @@ function App() {
               <input className="city-input" placeholder="Search City" onChange={changeCity}/>
               <input type="submit" className="btn-search-city"></input>
             </form>
-            <p class="response-message" ref={responseMessage}></p>
+            <p className="response-message" ref={responseMessage}></p>
           </article>
           <article className="weather-icon">
-            <FontAwesomeIcon icon={faCloudRain} size="5x"></FontAwesomeIcon>
+            <img src={icon} />
           </article>
           <article className="weather-data">
             <h1 className="weather-temp">
-              <span className="temp-value">25</span>
+              <span className="temp-value">{
+                  Math.round(weatherData.the_temp)
+                }</span>
               <span className="temp-unit">{unit}</span>
             </h1>
-            <h3 className="weather-desc"></h3>
+            <h3 className="weather-desc">
+              {
+                weatherData.weather_state_name
+              }
+            </h3>
           </article>
           <article className="weather-date-place">
             <p className="weather-date">

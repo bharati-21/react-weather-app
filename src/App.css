@@ -50,6 +50,7 @@ body {
   position: sticky;
   top: 0px;
   height: 100vh;
+
 }
 
 .weather-today .container::after {
@@ -114,14 +115,20 @@ body {
 
 .weather-today .weather-icon {
   margin: 3rem auto;
+  width: 6rem;
 }
 
 .weather-today .weather-temp {
-  margin: 2rem  auto;
+  margin: 2rem  auto 0.5rem auto;
   font-size: 4rem;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.weather-today .weather-desc {
+  color:#6E707A;
+  font-size: 0.9rem;
 }
 
 .weather-today .weather-temp .temp-unit {
