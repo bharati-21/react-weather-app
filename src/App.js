@@ -7,22 +7,100 @@ import lightShower from'./assets/Shower.png';
 
 
 
-console.log(lightShower);
+// console.log(lightShower);
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'december'];
 
 const todayDate = 29;
-const nextFiveDays = [];
-for(let i = 0; i<5; i++) {
-  const nextDate = new Date();
-  nextDate.setDate(nextDate.getDate()+i+1);
+
+const PostData = (props) => {
+  // console.log
+  return (
+    <div>
+      {props.props.map( data => {
+        return <h1 key={data.id}>{data.id}</h1>
+      })}
+    </div>
+  );
+};
+
+const FetchFutureData = (props) => {
+  const woeid = props.props.woeid;
+  const [nextFiveDates, setNextFiveDates] = useState([]);
+  const [nextFiveDatesFormatted, setNextFiveDatesFormatted]
+ = useState([]);
+ const [futureWeatherData, setFutureWeatherData] = useState([]);
+
+ useEffect(() => {
+   console.log('Useeffecy');
+  fetchNextFiveDays();
+
+ },[])
+
+  useEffect(() => {
+    fetchFutureWeatherData();
+  }, [woeid])
+
   
-  nextFiveDays[i] = `${days[nextDate.getDay()]}, ${nextDate.getDate()} ${months[nextDate.getMonth()]}`;
-}
+ 
+  function fetchNextFiveDays() {
+    const nextFiveDays = [];
+    const nextFiveDaysFormatted = [];
+    for(let i = 0; i<5; i++) {
+      const nextDate = new Date();
+  
+      nextDate.setDate(nextDate.getDate()+i+1);
+      console.log(nextDate);
+  
+      nextFiveDaysFormatted.push(`${nextDate.getFullYear()}/${Number(nextDate.getMonth())+1}/${nextDate.getDate()}`);
 
+      
+      nextFiveDays.push(`${days[nextDate.getDay()]}, ${nextDate.getDate()} ${months[nextDate.getMonth()]}`);
+    }
+    setNextFiveDates(nextFiveDates);
+    setNextFiveDatesFormatted(nextFiveDaysFormatted);
+  }
 
+  const fetchFutureWeatherData = (date) => {
+    // const apiKey = "fefa3094b5179a5209c7fa545cbbccb1";
+
+    const data = [];
+
+    nextFiveDatesFormatted.forEach(async(date) => {
+      try {
+
+        const weatherResponse = await fetch(`https://cors-anywhere-venky.herokuapp.com/https://www.metaweather.com/api/location/${woeid}/${date}/`)
+
+        // console.log(`https://cors-anywhere-venky.herokuapp.com/https://www.metaweather.com/api/location/${woeid}/${date}//`);
+      
+        const weatherData = await weatherResponse.json();
+        const weather_data = weatherData[0];
+        console.log("Weather data", weather_data)
+  
+        data.push(weather_data);
+        
+      }
+      catch(err) {
+        console.log(err);
+      }
+    })
+    
+    setFutureWeatherData(data);
+  };
+
+  
+  return (
+  <div>
+    {
+      <PostData props={futureWeatherData}></PostData>
+      
+    }
+  </div>
+  );
+
+};
 
 function App() {
 
@@ -31,12 +109,15 @@ function App() {
   const [unit, setUnit] = useState("°C");
   const [woeid, setWOEID] = useState("2295424");
   const [icon, setIcon] = useState("");
+  
+ const responseMessage = useRef("");
 
-  const responseMessage = useRef("");
+ 
 
   useEffect(() => {
     fetchWeatherData();
   }, [woeid]);
+
 
   const fetchWOEID = async () => {
     const response = await fetch(`https://cors-anywhere-venky.herokuapp.com/https://www.metaweather.com/api/location/search/?query=${city}`);
@@ -58,6 +139,7 @@ function App() {
     }
     else {
       responseMessage.current.className = 'message none';
+      
     }
     return data;
   };
@@ -67,16 +149,14 @@ function App() {
     
     const data = await weatherResponse.json();
     // console.log(weatherResponse)
-    console.log(data["consolidated_weather"][0]["weather_state_abbr"]); 
+    // console.log(data["consolidated_weather"][0]["weather_state_abbr"]); 
     setWeatherData(data["consolidated_weather"][0])
 
     setIcon(`https://www.metaweather.com//static/img/weather/${data["consolidated_weather"][0]["weather_state_abbr"]}.svg`);
-    console.log(icon);
+    // console.log(icon);
   };
 
   
-  
-
 
   const today = `${days[new Date().getDay()]}, ${new Date().getDate()} ${months[new Date().getMonth()]}`;
 
@@ -98,6 +178,7 @@ function App() {
       });
   }
 
+  const props = {woeid: woeid}
   return (
     <main className="App">
       <section className="weather-today">
@@ -142,14 +223,15 @@ function App() {
       </section>
       <section className="container weather-future">
         <article className="weather-future-forecast cards-container">
+          <FetchFutureData props={props}/>
           {
-            nextFiveDays.map(date => {
-              return <div className="card small">
-                <p className="weather-future-date">{date}</p>
-                <p className="weather-future-icon"><FontAwesomeIcon icon={faCloud}></FontAwesomeIcon></p>
-                <p className="weather-future-temp">15 {unit}</p>
-              </div>
-            })
+            // nextFiveDays.map(date => {
+            //   return <div className="card small">
+            //     <p className="weather-future-date">{date}</p>
+            //     <p className="weather-future-icon"><FontAwesomeIcon icon={faCloud}></FontAwesomeIcon></p>
+            //     <p className="weather-future-temp">15 {unit}</p>
+            //   </div>
+            // })
           }
         </article>
         <article className="weather-today-highlights">
