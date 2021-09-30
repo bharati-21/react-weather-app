@@ -25,11 +25,21 @@ export const FetchFutureData = (props) => {
     const [icon, setIcon] = useState("");
     const [minTemp, setMinTemp] = useState("");
     const [maxTemp, setMaxTemp] = useState("");
+
   
     useEffect(() => {
       fetchFutureWeatherData();
-    }, [])
+    }, [unit])
   
+    const setTempAndUnit = (weather_data) => {
+      let minTemp = Math.round(Number(weather_data["max_temp"])), maxTemp = Math.round(Number(weather_data["min_temp"]));
+      if(unit === "°F") {
+        minTemp = minTemp * (9/5) + 32;
+        maxTemp = maxTemp * (9/5) + 32;
+      }
+      setMaxTemp(Math.round(minTemp));
+      setMinTemp(Math.round(maxTemp));
+    };
   
     const fetchFutureWeatherData = async() => {
         try {
@@ -40,8 +50,10 @@ export const FetchFutureData = (props) => {
             const weather_data = weatherData[0];
             console.log("Weather data", weather_data)
         
-            setMaxTemp(weather_data["max_temp"]);
-            setMinTemp(weather_data["min_temp"]);
+
+            setTempAndUnit(weather_data);
+
+            
             setIcon(`https://www.metaweather.com/static/img/weather/${weather_data["weather_state_abbr"]}.svg`);
 
         }
@@ -60,8 +72,8 @@ export const FetchFutureData = (props) => {
     <img className="weather-future-icon" src={icon} />
         
         <p className="weather-future-temp">
-            <span className="min-temp">{Math.round(minTemp)} {unit}</span>
-            <span className="max-temp">{Math.round(maxTemp)} {unit}</span>
+            <span className="min-temp">{minTemp} {unit}</span>
+            <span className="max-temp">{maxTemp} {unit}</span>
         </p>
     </>
     );

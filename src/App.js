@@ -3,7 +3,8 @@ import {useState, useRef, useEffect} from 'react'
 import {axios} from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faCloud, faCloudRain, faCloudSun, faSun, faWind} from '@fortawesome/free-solid-svg-icons';
-import {FutureCards} from './Components/FutureCards.js';
+import {FutureCards} from './Components/FutureCards';
+import { HighlightCards } from './Components/HighlightCards';
 
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -22,6 +23,7 @@ function App() {
   const [icon, setIcon] = useState("");
   const [nextFiveDates, setNextFiveDates] = useState([]);
   const [nextFiveDatesFormatted, setNextFiveDatesFormatted] = useState([]);
+  const [temp, setTemp] = useState();
   const [weatherCity, setWeatherCity] = useState("Chennai");
 
   
@@ -37,6 +39,19 @@ function App() {
 
 
   
+  function changeUnit(e) {
+    if(unit === '°C' && e.target.innerText === "°F") {
+      setUnit("°F");
+
+      setTemp(Math.round((temp * (9/5)) + 32));
+
+    }
+    else if(unit === '°F' && e.target.innerText === "°C") {
+      setUnit("°C");
+      setTemp(Math.round((temp - 32) * (5/9)));
+    }
+  }
+
   function fetchNextFiveDays() {
     const nextFiveDays = [];
     const nextFiveDaysFormatted = [];
@@ -69,8 +84,7 @@ function App() {
     if(city!==responseCity) {
       responseMessage.current.textContent = `Did you mean ${responseCity}?`;
       responseMessage.current.className = "message suggestion block";
-      setWeatherCity(city);
-      weatherCity.current.innerText = responseCity;
+      setWeatherCity(responseCity);
     }
     else {
       responseMessage.current.className = 'message none';
@@ -85,6 +99,14 @@ function App() {
     const data = await weatherResponse.json();
 
     setWeatherData(data["consolidated_weather"][0])
+    let weatherTemp = Math.round(Number(data["consolidated_weather"][0]["the_temp"]));
+    if(unit === '°F') {
+        weatherTemp = (Math.round(weatherTemp * (9/5) + 32));
+    }
+
+    setTemp(weatherTemp);
+    
+    
 
     setIcon(`https://www.metaweather.com//static/img/weather/${data["consolidated_weather"][0]["weather_state_abbr"]}.svg`);
     // console.log(icon);
@@ -130,9 +152,8 @@ function App() {
           </article>
           <article className="weather-data">
             <h1 className="weather-temp">
-              <span className="temp-value">{
-                  Math.round(weatherData.the_temp)
-                }</span>
+              <span className="temp-value"> {!Number.isNaN(temp) ?
+                  temp : ""}</span>
               <span className="temp-unit">{unit}</span>
             </h1>
             <h3 className="weather-desc">
@@ -157,36 +178,15 @@ function App() {
         </div>
       </section>
       <section className="container weather-future">
+        <article className="unit-buttons container">
+          <button onClick={changeUnit} className={unit === "°C" ? "unit unit-cel current-unit" : "unit unit-cel"}>°C</button>
+          <button onClick={changeUnit} className={unit === "°C" ? "unit unit-far" : "unit unit-far current-unit"}>°F</button>
+        </article>
         <article className="weather-future-forecast cards-container">
           <FutureCards futureCardProps = {futureCardProps}/>
         </article>
         <article className="weather-today-highlights">
-          <h2 className="highlights-head">Highlights</h2>
-          <div className="cards-container">
-            <div className="card large">
-              <p className="weather-highlight">Wind Status</p>
-              <h2 className="weather-highlight-value">7mph</h2>
-              <p>
-                <FontAwesomeIcon icon={faWind} className="weather-highlight-icon"></FontAwesomeIcon>
-              </p>
-            </div>
-            <div className="card large">
-              <p className="weather-highlight">Humidity</p>
-              <h2 className="weather-highlight-value">
-                <span className="humidity-value">84</span>
-                <span className="humidity-unit">%</span>
-              </h2>
-              <div className="progress-bar"></div>
-            </div>
-            <div className="card medium">
-              <p className="weather-highlight">Visibility</p>
-              <h2 className="weather-highlight-value">6,4 miles</h2>
-            </div>
-            <div className="card medium">
-              <p className="weather-highlight">Air Pressure</p>
-              <h2 className="weather-highlight-value">998 mb</h2>
-            </div>
-          </div>
+          <HighlightCards weatherData={weatherData}  />
         </article>
         <footer>
           <small>Created by Bharati</small>

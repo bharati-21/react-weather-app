@@ -157,6 +157,43 @@ body {
   padding: 2rem;
 }
 
+.weather-future .unit-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.weather-future .unit-buttons .unit {
+  margin: 0.5rem;
+  padding: 1rem;
+  background-color: #585676;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  color: #E7E7EB;
+
+  outline : none;
+  border: none;
+
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.weather-future .unit-buttons .unit.current-unit {
+  background: #e7E7Eb;
+  color: #110E3C;
+
+}
 
 .weather-future-date {
   font-size: 0.8rem;
@@ -208,7 +245,7 @@ body {
   margin: 0.5rem;
 }
 
-.weather-today-highlights > h2 {
+.weather-today-highlights  h2.highlights-head {
   margin: 3rem auto 1rem auto;
 }
 
@@ -237,7 +274,7 @@ body {
 
 .progress-bar {
   width: 100%;
-  background-color: #6E707A;
+  background-color: #E7E7EB;
   height: 8px;
   border-radius: 2rem;
   -webkit-border-radius: 2rem;
@@ -247,9 +284,9 @@ body {
   position: relative;
 }
 
-.progress-bar::after {
+.progress-bar-width {
   position: absolute;
-  background-color: #E7E7EB;
+  background-color: #FFEC65;
   content:'';
   width: 84%;
   height: 100%;
@@ -325,6 +362,14 @@ footer {
 
   .cards-container {
     grid-template-columns: repeat(5,1fr);
+  }
+
+  .weather-future .unit-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
   }
 }
 
