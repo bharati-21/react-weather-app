@@ -3,11 +3,8 @@ import {useState, useRef, useEffect} from 'react'
 import {axios} from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faCloud, faCloudRain, faCloudSun, faSun, faWind} from '@fortawesome/free-solid-svg-icons';
-import lightShower from'./assets/Shower.png';
+import {FutureCards} from './Components/FutureCards.js';
 
-
-
-// console.log(lightShower);
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -15,92 +12,6 @@ const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 
 const todayDate = 29;
 
-const PostData = (props) => {
-  // console.log
-  return (
-    <div>
-      {props.props.map( data => {
-        return <h1 key={data.id}>{data.id}</h1>
-      })}
-    </div>
-  );
-};
-
-const FetchFutureData = (props) => {
-  const woeid = props.props.woeid;
-  const [nextFiveDates, setNextFiveDates] = useState([]);
-  const [nextFiveDatesFormatted, setNextFiveDatesFormatted]
- = useState([]);
- const [futureWeatherData, setFutureWeatherData] = useState([]);
-
- useEffect(() => {
-   console.log('Useeffecy');
-  fetchNextFiveDays();
-
- },[])
-
-  useEffect(() => {
-    fetchFutureWeatherData();
-  }, [woeid])
-
-  
- 
-  function fetchNextFiveDays() {
-    const nextFiveDays = [];
-    const nextFiveDaysFormatted = [];
-    for(let i = 0; i<5; i++) {
-      const nextDate = new Date();
-  
-      nextDate.setDate(nextDate.getDate()+i+1);
-      console.log(nextDate);
-  
-      nextFiveDaysFormatted.push(`${nextDate.getFullYear()}/${Number(nextDate.getMonth())+1}/${nextDate.getDate()}`);
-
-      
-      nextFiveDays.push(`${days[nextDate.getDay()]}, ${nextDate.getDate()} ${months[nextDate.getMonth()]}`);
-    }
-    setNextFiveDates(nextFiveDates);
-    setNextFiveDatesFormatted(nextFiveDaysFormatted);
-  }
-
-  const fetchFutureWeatherData = (date) => {
-    // const apiKey = "fefa3094b5179a5209c7fa545cbbccb1";
-
-    const data = [];
-
-    nextFiveDatesFormatted.forEach(async(date) => {
-      try {
-
-        const weatherResponse = await fetch(`https://cors-anywhere-venky.herokuapp.com/https://www.metaweather.com/api/location/${woeid}/${date}/`)
-
-        // console.log(`https://cors-anywhere-venky.herokuapp.com/https://www.metaweather.com/api/location/${woeid}/${date}//`);
-      
-        const weatherData = await weatherResponse.json();
-        const weather_data = weatherData[0];
-        console.log("Weather data", weather_data)
-  
-        data.push(weather_data);
-        
-      }
-      catch(err) {
-        console.log(err);
-      }
-    })
-    
-    setFutureWeatherData(data);
-  };
-
-  
-  return (
-  <div>
-    {
-      <PostData props={futureWeatherData}></PostData>
-      
-    }
-  </div>
-  );
-
-};
 
 function App() {
 
@@ -109,15 +20,38 @@ function App() {
   const [unit, setUnit] = useState("°C");
   const [woeid, setWOEID] = useState("2295424");
   const [icon, setIcon] = useState("");
+  const [nextFiveDates, setNextFiveDates] = useState([]);
+  const [nextFiveDatesFormatted, setNextFiveDatesFormatted] = useState([]);
+  const [weatherCity, setWeatherCity] = useState("Chennai");
+
   
- const responseMessage = useRef("");
+  const responseMessage = useRef("");
+
+  // const nextFiveDates = [], nextFiveDatesFormatted = [];
 
  
-
   useEffect(() => {
+    fetchNextFiveDays();
     fetchWeatherData();
   }, [woeid]);
 
+
+  
+  function fetchNextFiveDays() {
+    const nextFiveDays = [];
+    const nextFiveDaysFormatted = [];
+    for(let i = 0; i<5; i++) {
+      const nextDate = new Date();
+  
+      nextDate.setDate(nextDate.getDate()+i+1);
+  
+      nextFiveDaysFormatted.push(`${nextDate.getFullYear()}/${Number(nextDate.getMonth())+1}/${nextDate.getDate()}`);      
+      nextFiveDays.push(`${days[nextDate.getDay()]}, ${nextDate.getDate()} ${months[nextDate.getMonth()]}`);
+    }
+    
+    setNextFiveDatesFormatted(nextFiveDaysFormatted);
+    setNextFiveDates(nextFiveDays);
+  }
 
   const fetchWOEID = async () => {
     const response = await fetch(`https://cors-anywhere-venky.herokuapp.com/https://www.metaweather.com/api/location/search/?query=${city}`);
@@ -135,11 +69,12 @@ function App() {
     if(city!==responseCity) {
       responseMessage.current.textContent = `Did you mean ${responseCity}?`;
       responseMessage.current.className = "message suggestion block";
-      setCity(responseCity);
+      setWeatherCity(city);
+      weatherCity.current.innerText = responseCity;
     }
     else {
       responseMessage.current.className = 'message none';
-      
+      setWeatherCity(city);
     }
     return data;
   };
@@ -148,8 +83,7 @@ function App() {
     const weatherResponse = await fetch(`https://cors-anywhere-venky.herokuapp.com/https://www.metaweather.com/api/location/${woeid}/`)
     
     const data = await weatherResponse.json();
-    // console.log(weatherResponse)
-    // console.log(data["consolidated_weather"][0]["weather_state_abbr"]); 
+
     setWeatherData(data["consolidated_weather"][0])
 
     setIcon(`https://www.metaweather.com//static/img/weather/${data["consolidated_weather"][0]["weather_state_abbr"]}.svg`);
@@ -178,7 +112,8 @@ function App() {
       });
   }
 
-  const props = {woeid: woeid}
+  const props = {woeid: woeid, nextFiveDatesFormatted: nextFiveDatesFormatted}
+  const futureCardProps = {nextFiveDates: nextFiveDates, nextFiveDatesFormatted: nextFiveDatesFormatted, woeid: woeid, unit: unit};
   return (
     <main className="App">
       <section className="weather-today">
@@ -215,7 +150,7 @@ function App() {
                 <FontAwesomeIcon icon={faMapMarkerAlt}></FontAwesomeIcon>
               </span>
               <span className="weather-place">
-                {city}
+                {weatherCity}
               </span>
             </p>
           </article>
@@ -223,16 +158,7 @@ function App() {
       </section>
       <section className="container weather-future">
         <article className="weather-future-forecast cards-container">
-          <FetchFutureData props={props}/>
-          {
-            // nextFiveDays.map(date => {
-            //   return <div className="card small">
-            //     <p className="weather-future-date">{date}</p>
-            //     <p className="weather-future-icon"><FontAwesomeIcon icon={faCloud}></FontAwesomeIcon></p>
-            //     <p className="weather-future-temp">15 {unit}</p>
-            //   </div>
-            // })
-          }
+          <FutureCards futureCardProps = {futureCardProps}/>
         </article>
         <article className="weather-today-highlights">
           <h2 className="highlights-head">Highlights</h2>
@@ -271,88 +197,3 @@ function App() {
 }
 
 export default App;
-
-
-/*
-<section className="weather-today">
-        <article className="flex-container">
-          <div className="flex-item">
-            <form className="city-form" onSubmit={searchCity}>
-              <input type="text" name="city-input" className="city-input" id="city-input"  placeholder="Enter City Name" onChange={changeCity}/>
-              <button type="submit" value="Search" className="city-search">Search <FontAwesomeIcon icon={faMapMarkerAlt}></FontAwesomeIcon></button>
-            </form>  
-            <img src={lightShower}></img>
-          </div>
-            
-          <h1 className="weather-temp">20<span className="weather-temp-unit">C</span></h1>
-          <h3 className="weather-desc">Windy</h3>
-          <div className="weather-date-place">
-            <p className="weather-date"></p>
-            <p className="weather-place">
-              <span className="fontawesome-icon">
-                <FontAwesomeIcon icon={faMapMarkerAlt}></FontAwesomeIcon>
-              </span>
-              <span className="weather-city">
-                {city}
-              </span>
-              </p>
-          </div>
-        </article>      
-      </section>
-      <section className="weather-future">
-        <article className="flex-container">
-          <div className="card-container future-forecast">
-            <div className="card">
-              <h4 className="weather-future-date">Day 1</h4>
-              <div className="weather-future-icon"></div>
-              <p className="weather-future-temp"></p>
-            </div>
-            <div className="card">
-              <h4 className="weather-future-date">Day 2</h4>
-              <div className="weather-future-icon"></div>
-              <p className="weather-future-temp"></p>
-            </div>
-            <div className="card">
-              <h4 className="weather-future-date">Day 3</h4>
-              <div className="weather-future-icon"></div>
-              <p className="weather-future-temp"></p>
-            </div>
-            <div className="card">
-              <h4 className="weather-future-date">Day 4</h4>
-              <div className="weather-future-icon"></div>
-              <p className="weather-future-temp"></p>
-            </div>
-            <div className="card">
-              <h4 className="weather-future-date">Day 5</h4>
-              <div className="weather-future-icon"></div>
-              <p className="weather-future-temp"></p>
-            </div>
-          </div>
-          <div className="weather-today-highlights">
-            <h2>Today's Highlights</h2>
-            <div className="card-container highlights">
-              <div className="card">
-                <h4 className="weather-highlight">Wind Status</h4>
-                <p className="weather-highlight-value"></p>
-              </div>
-              <div className="card">
-                <h4 className="weather-highlight">Humidity</h4>
-                <p className="weather-highlight-value"></p>
-              </div>
-              <div className="card">
-                <h4 className="weather-highlight">Visibility</h4>
-                <p className="weather-highlight-value"></p>
-              </div>
-              <div className="card">
-                <h4 className="weather-highlight">Air Pressure</h4>
-                <p className="weather-highlight-value"></p>
-              </div>
-            </div>
-          </div>
-          <footer>
-            <small>created by Bharati</small>
-          </footer>
-        </article>
-        
-      </section>
-      */
