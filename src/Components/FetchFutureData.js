@@ -48,7 +48,7 @@ export const FetchFutureData = (props) => {
             
             const weatherData = await weatherResponse.json();
             const weather_data = weatherData[0];
-            console.log("Weather data", weather_data)
+            // console.log("Weather data", weather_data)
         
 
             setTempAndUnit(weather_data);

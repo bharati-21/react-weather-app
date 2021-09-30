@@ -12,7 +12,6 @@ export  const FutureCards = (props) => {
             nextFiveDates.map((date, index) => {
               return <div key={woeid-index} className="card small">
                   <FetchFutureData woeid={woeid} formattedDate = {nextFiveDatesFormatted[index]} unit={unit} date={date}/>
-                
               </div>
             })
         }
