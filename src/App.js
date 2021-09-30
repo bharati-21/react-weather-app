@@ -33,6 +33,7 @@ function App() {
 
  
   useEffect(() => {
+    console.clear();
     fetchNextFiveDays();
     fetchWeatherData();
   }, [woeid]);
