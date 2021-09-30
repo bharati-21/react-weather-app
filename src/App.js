@@ -3,25 +3,15 @@ import {useState, useRef, useEffect} from 'react'
 import {axios} from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faCloud, faCloudRain, faCloudSun, faSun, faWind} from '@fortawesome/free-solid-svg-icons';
-import lightShower from'./assets/Shower.png';
+import {FutureCards} from './Components/FutureCards';
+import { HighlightCards } from './Components/HighlightCards';
 
-
-
-console.log(lightShower);
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'december'];
 
 const todayDate = 29;
-const nextFiveDays = [];
-for(let i = 0; i<5; i++) {
-  const nextDate = new Date();
-  nextDate.setDate(nextDate.getDate()+i+1);
-  
-  nextFiveDays[i] = `${days[nextDate.getDay()]}, ${nextDate.getDate()} ${months[nextDate.getMonth()]}`;
-}
-
 
 
 function App() {
@@ -31,12 +21,52 @@ function App() {
   const [unit, setUnit] = useState("°C");
   const [woeid, setWOEID] = useState("2295424");
   const [icon, setIcon] = useState("");
+  const [nextFiveDates, setNextFiveDates] = useState([]);
+  const [nextFiveDatesFormatted, setNextFiveDatesFormatted] = useState([]);
+  const [temp, setTemp] = useState();
+  const [weatherCity, setWeatherCity] = useState("Chennai");
 
+  
   const responseMessage = useRef("");
 
+  // const nextFiveDates = [], nextFiveDatesFormatted = [];
+
+ 
   useEffect(() => {
+    fetchNextFiveDays();
     fetchWeatherData();
   }, [woeid]);
+
+
+  
+  function changeUnit(e) {
+    if(unit === '°C' && e.target.innerText === "°F") {
+      setUnit("°F");
+
+      setTemp(Math.round((temp * (9/5)) + 32));
+
+    }
+    else if(unit === '°F' && e.target.innerText === "°C") {
+      setUnit("°C");
+      setTemp(Math.round((temp - 32) * (5/9)));
+    }
+  }
+
+  function fetchNextFiveDays() {
+    const nextFiveDays = [];
+    const nextFiveDaysFormatted = [];
+    for(let i = 0; i<5; i++) {
+      const nextDate = new Date();
+  
+      nextDate.setDate(nextDate.getDate()+i+1);
+  
+      nextFiveDaysFormatted.push(`${nextDate.getFullYear()}/${Number(nextDate.getMonth())+1}/${nextDate.getDate()}`);      
+      nextFiveDays.push(`${days[nextDate.getDay()]}, ${nextDate.getDate()} ${months[nextDate.getMonth()]}`);
+    }
+    
+    setNextFiveDatesFormatted(nextFiveDaysFormatted);
+    setNextFiveDates(nextFiveDays);
+  }
 
   const fetchWOEID = async () => {
     const response = await fetch(`https://cors-anywhere-venky.herokuapp.com/https://www.metaweather.com/api/location/search/?query=${city}`);
@@ -54,10 +84,11 @@ function App() {
     if(city!==responseCity) {
       responseMessage.current.textContent = `Did you mean ${responseCity}?`;
       responseMessage.current.className = "message suggestion block";
-      setCity(responseCity);
+      setWeatherCity(responseCity);
     }
     else {
       responseMessage.current.className = 'message none';
+      setWeatherCity(city);
     }
     return data;
   };
@@ -66,17 +97,22 @@ function App() {
     const weatherResponse = await fetch(`https://cors-anywhere-venky.herokuapp.com/https://www.metaweather.com/api/location/${woeid}/`)
     
     const data = await weatherResponse.json();
-    // console.log(weatherResponse)
-    console.log(data["consolidated_weather"][0]["weather_state_abbr"]); 
+
     setWeatherData(data["consolidated_weather"][0])
+    let weatherTemp = Math.round(Number(data["consolidated_weather"][0]["the_temp"]));
+    if(unit === '°F') {
+        weatherTemp = (Math.round(weatherTemp * (9/5) + 32));
+    }
+
+    setTemp(weatherTemp);
+    
+    
 
     setIcon(`https://www.metaweather.com//static/img/weather/${data["consolidated_weather"][0]["weather_state_abbr"]}.svg`);
-    console.log(icon);
+    // console.log(icon);
   };
 
   
-  
-
 
   const today = `${days[new Date().getDay()]}, ${new Date().getDate()} ${months[new Date().getMonth()]}`;
 
@@ -98,6 +134,8 @@ function App() {
       });
   }
 
+  const props = {woeid: woeid, nextFiveDatesFormatted: nextFiveDatesFormatted}
+  const futureCardProps = {nextFiveDates: nextFiveDates, nextFiveDatesFormatted: nextFiveDatesFormatted, woeid: woeid, unit: unit};
   return (
     <main className="App">
       <section className="weather-today">
@@ -114,9 +152,8 @@ function App() {
           </article>
           <article className="weather-data">
             <h1 className="weather-temp">
-              <span className="temp-value">{
-                  Math.round(weatherData.the_temp)
-                }</span>
+              <span className="temp-value"> {!Number.isNaN(temp) ?
+                  temp : ""}</span>
               <span className="temp-unit">{unit}</span>
             </h1>
             <h3 className="weather-desc">
@@ -134,51 +171,22 @@ function App() {
                 <FontAwesomeIcon icon={faMapMarkerAlt}></FontAwesomeIcon>
               </span>
               <span className="weather-place">
-                {city}
+                {weatherCity}
               </span>
             </p>
           </article>
         </div>
       </section>
       <section className="container weather-future">
+        <article className="unit-buttons container">
+          <button onClick={changeUnit} className={unit === "°C" ? "unit unit-cel current-unit" : "unit unit-cel"}>°C</button>
+          <button onClick={changeUnit} className={unit === "°C" ? "unit unit-far" : "unit unit-far current-unit"}>°F</button>
+        </article>
         <article className="weather-future-forecast cards-container">
-          {
-            nextFiveDays.map(date => {
-              return <div className="card small">
-                <p className="weather-future-date">{date}</p>
-                <p className="weather-future-icon"><FontAwesomeIcon icon={faCloud}></FontAwesomeIcon></p>
-                <p className="weather-future-temp">15 {unit}</p>
-              </div>
-            })
-          }
+          <FutureCards futureCardProps = {futureCardProps}/>
         </article>
         <article className="weather-today-highlights">
-          <h2 className="highlights-head">Highlights</h2>
-          <div className="cards-container">
-            <div className="card large">
-              <p className="weather-highlight">Wind Status</p>
-              <h2 className="weather-highlight-value">7mph</h2>
-              <p>
-                <FontAwesomeIcon icon={faWind} className="weather-highlight-icon"></FontAwesomeIcon>
-              </p>
-            </div>
-            <div className="card large">
-              <p className="weather-highlight">Humidity</p>
-              <h2 className="weather-highlight-value">
-                <span className="humidity-value">84</span>
-                <span className="humidity-unit">%</span>
-              </h2>
-              <div className="progress-bar"></div>
-            </div>
-            <div className="card medium">
-              <p className="weather-highlight">Visibility</p>
-              <h2 className="weather-highlight-value">6,4 miles</h2>
-            </div>
-            <div className="card medium">
-              <p className="weather-highlight">Air Pressure</p>
-              <h2 className="weather-highlight-value">998 mb</h2>
-            </div>
-          </div>
+          <HighlightCards weatherData={weatherData}  />
         </article>
         <footer>
           <small>Created by Bharati</small>
@@ -189,88 +197,3 @@ function App() {
 }
 
 export default App;
-
-
-/*
-<section className="weather-today">
-        <article className="flex-container">
-          <div className="flex-item">
-            <form className="city-form" onSubmit={searchCity}>
-              <input type="text" name="city-input" className="city-input" id="city-input"  placeholder="Enter City Name" onChange={changeCity}/>
-              <button type="submit" value="Search" className="city-search">Search <FontAwesomeIcon icon={faMapMarkerAlt}></FontAwesomeIcon></button>
-            </form>  
-            <img src={lightShower}></img>
-          </div>
-            
-          <h1 className="weather-temp">20<span className="weather-temp-unit">C</span></h1>
-          <h3 className="weather-desc">Windy</h3>
-          <div className="weather-date-place">
-            <p className="weather-date"></p>
-            <p className="weather-place">
-              <span className="fontawesome-icon">
-                <FontAwesomeIcon icon={faMapMarkerAlt}></FontAwesomeIcon>
-              </span>
-              <span className="weather-city">
-                {city}
-              </span>
-              </p>
-          </div>
-        </article>      
-      </section>
-      <section className="weather-future">
-        <article className="flex-container">
-          <div className="card-container future-forecast">
-            <div className="card">
-              <h4 className="weather-future-date">Day 1</h4>
-              <div className="weather-future-icon"></div>
-              <p className="weather-future-temp"></p>
-            </div>
-            <div className="card">
-              <h4 className="weather-future-date">Day 2</h4>
-              <div className="weather-future-icon"></div>
-              <p className="weather-future-temp"></p>
-            </div>
-            <div className="card">
-              <h4 className="weather-future-date">Day 3</h4>
-              <div className="weather-future-icon"></div>
-              <p className="weather-future-temp"></p>
-            </div>
-            <div className="card">
-              <h4 className="weather-future-date">Day 4</h4>
-              <div className="weather-future-icon"></div>
-              <p className="weather-future-temp"></p>
-            </div>
-            <div className="card">
-              <h4 className="weather-future-date">Day 5</h4>
-              <div className="weather-future-icon"></div>
-              <p className="weather-future-temp"></p>
-            </div>
-          </div>
-          <div className="weather-today-highlights">
-            <h2>Today's Highlights</h2>
-            <div className="card-container highlights">
-              <div className="card">
-                <h4 className="weather-highlight">Wind Status</h4>
-                <p className="weather-highlight-value"></p>
-              </div>
-              <div className="card">
-                <h4 className="weather-highlight">Humidity</h4>
-                <p className="weather-highlight-value"></p>
-              </div>
-              <div className="card">
-                <h4 className="weather-highlight">Visibility</h4>
-                <p className="weather-highlight-value"></p>
-              </div>
-              <div className="card">
-                <h4 className="weather-highlight">Air Pressure</h4>
-                <p className="weather-highlight-value"></p>
-              </div>
-            </div>
-          </div>
-          <footer>
-            <small>created by Bharati</small>
-          </footer>
-        </article>
-        
-      </section>
-      */
