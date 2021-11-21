@@ -2,7 +2,7 @@
 An application created using ReactJS that displays the current weather forecast and the forecast for the next 5 days.
 
 ### This application tests users knowledge of triangles and it's types.
-[Live demo of the application](https://bharati-play-with-triangles.netlify.app/)
+[Live demo of the application](https://react-weather-app-bharati.netlify.app/)
 
 <hr />
 
@@ -21,6 +21,7 @@ An application created using ReactJS that displays the current weather forecast 
 4. The application shows the current forecast, and also for the next 5 days. 
 5. Additionaly, this app also allows users to view data in either degree Farenheit or degree Celcius units.
 <br />
+
 ![Image of the application](https://github.com/bharati-21/react-weather-app/blob/master/weather-app.PNG)
 
 <hr />
